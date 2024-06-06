@@ -4,7 +4,7 @@ from tkinter import filedialog, messagebox
 from dashboard import Dashboard
 from ocr import perform_ocr
 from grammar import correct_grammar
-from file_operations import save_as_word, save_as_pdf, save_as_text, save_job, load_previous_jobs
+from file_operations import save_as_word, save_as_pdf, save_as_text, save_job
 
 class OCRApp:
     def __init__(self, root):
@@ -47,6 +47,8 @@ class OCRApp:
 
         self.copy_button = tk.Button(self.result_window, text="Copy to Clipboard", command=self.copy_to_clipboard)
         self.copy_button.pack()
+
+        self.save_job()
 
     def save_as_word(self):
         file_path = filedialog.asksaveasfilename(defaultextension=".docx")

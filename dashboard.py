@@ -1,3 +1,4 @@
+import os
 import tkinter as tk
 from tkinter import ttk, messagebox
 from file_operations import load_previous_jobs, save_as_word, save_as_pdf, save_as_text
@@ -53,11 +54,7 @@ class Dashboard(tk.Frame):
         self.delete_button.pack()
 
     def delete_job(self, job):
-        jobs = load_previous_jobs()
-        jobs = [j for j in jobs if j['name'] != job['name']]
-        with open('jobs.json', 'w') as file:
-            json.dump(jobs, file, indent=4)
-        self.options_window.destroy()
+        os.remove(job['path'])
         self.update_dashboard()
 
     def update_dashboard(self):
