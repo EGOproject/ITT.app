@@ -6,16 +6,23 @@ from fpdf import FPDF
 JOBS_FOLDER = "jobs"
 KEY_FILE = "key.key"
 
-# Load or generate encryption key
-if os.path.exists(KEY_FILE):
-    with open(KEY_FILE, 'rb') as file:
-        KEY = file.read()
-else:
-    KEY = Fernet.generate_key()
-    with open(KEY_FILE, 'wb') as file:
-        file.write(KEY)
+def load_or_generate_key():
+    if os.path.exists(KEY_FILE):
+        with open(KEY_FILE, 'rb') as file:
+            key = file.read()
+    else:
+        key = Fernet.generate_key()
+        with open(KEY_FILE, 'wb') as file:
+            file.write(key)
+    return key
 
-cipher = Fernet(KEY)
+def initialize_cipher():
+    key = load_or_generate_key()
+    return Fernet(key)
+
+cipher = initialize_cipher()
+
+JOBS_FOLDER = "jobs"
 
 def save_as_word(text, file_path):
     doc = Document()
@@ -23,11 +30,19 @@ def save_as_word(text, file_path):
     doc.save(file_path)
 
 def save_as_pdf(text, file_path):
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font("Arial", size=12)
-    pdf.multi_cell(0, 10, text)
-    pdf.output(file_path)
+    try:
+        # Replace problematic characters
+        text = text.replace('\u2019', "'")
+        
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font("Arial", size=12)
+        pdf.multi_cell(0, 10, text)
+        pdf.output(file_path)
+        print("PDF saved successfully.")
+    except Exception as e:
+        print(f"Error saving PDF: {e}")
+
 
 def save_as_text(text, file_path):
     with open(file_path, 'w') as file:
@@ -50,7 +65,7 @@ def load_previous_jobs():
     jobs = []
     for file_name in os.listdir(JOBS_FOLDER):
         if file_name.endswith('.itt'):
-            job_name = file_name[:-4]
+            job_name = file_name[:-2]
             file_path = os.path.join(JOBS_FOLDER, file_name)
             with open(file_path, 'rb') as file:
                 encrypted_text = file.read()
@@ -63,6 +78,6 @@ def load_previous_jobs():
     return jobs
 
 def save_job(text):
-    job_name = " ".join(text.split()[:3])  # Use the first 3 words as the job name
+    job_name = " ".join(text.split()[:1])  # Use the first word as the job name
     save_as_itt(text, job_name)
     return job_name

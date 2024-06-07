@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image OCR Application</title>
+    <!-- Include Tesseract.js and jsPDF libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/body-pix"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/facemesh"></script>
+</head>
+<body>
+    <input type="file" id="fileInput" accept="image/*">
+    <div id="result"></div>
+
+    <!-- Include additional UI elements as needed -->
+
+    <script>
+        // JavaScript code for handling image uploads, OCR, and PDF generation
+        document.getElementById('fileInput').addEventListener('change', handleFileUpload);
+
+        async function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            try {
+                const text = await performOCR(file);
+                displayResult(text);
+            } catch (error) {
+                console.error('Error:', error);
+                displayError('Failed to perform OCR.');
+            }
+        }
+
+        async function performOCR(file) {
+            const { createWorker } = Tesseract;
+            const worker = createWorker({
+                logger: m => console.log(m),
+            });
+
+            await worker.load();
+            await worker.loadLanguage('eng');
+            await worker.initialize('eng');
+
+            const { data: { text } } = await worker.recognize(file);
+            await worker.terminate();
+            return text;
+        }
+
+        function displayResult(text) {
+            const resultContainer = document.getElementById('result');
+            resultContainer.textContent = text;
+
+            // Add options for saving as PDF, Word, etc.
+        }
+
+        function displayError(message) {
+            const resultContainer = document.getElementById('result');
+            resultContainer.textContent = message;
+        }
+    </script>
+</body>
+</html>
